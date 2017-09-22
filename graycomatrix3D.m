@@ -19,5 +19,11 @@ numLevels = p.Results.NumLevels;
 offsetArray = p.Results.offset;
 symmetric = p.Results.symmetric;
 
+% Get the scaled volume from the graycomatrix function by converting the 3D
+% matrix to 2D temporarily.
+V2D = reshape(V, size(V, 1), size(V, 2) * size(V, 3));
+[~, SV2D] = graycomatrix(V2D, 'NumLevels', numLevels);
+SV = reshape(SV2D, size(V, 1), size(V, 2), size(V, 3));
+
 end
 
