@@ -23,3 +23,6 @@ octave-workspace
 
 # Large data files
 *.mat
+
+# .DS_Store
+.DS_Store
