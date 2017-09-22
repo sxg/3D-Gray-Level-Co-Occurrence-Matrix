@@ -17,7 +17,7 @@ addParameter(p, 'Symmetric', false);
 parse(p, V, varargin{:});
 numLevels = p.Results.NumLevels;
 offsetArray = p.Results.offset;
-% symmetric = p.Results.symmetric;
+symmetric = p.Results.Symmetric;
 
 %% Get the scaled volume from the graycomatrix function by converting the 3D
 % matrix to 2D temporarily.
@@ -44,7 +44,12 @@ for o = 1:size(offsetArray, 1)
     colOffset = offset(2);
     sliceOffset = offset(3);
     for grayX = 1:numLevels
-        for grayY = 1:numLevels
+        if ~symmetric
+            grayYMax = numLevels;
+        else
+            grayYMax = grayX;
+        end
+        for grayY = 1:grayYMax
             for i = iMin:iMax
                 for j = jMin:jMax
                     for k = kMin:kMax
@@ -63,6 +68,16 @@ for o = 1:size(offsetArray, 1)
                 end
             end
         end
+    end
+end
+
+if symmetric
+    for i = 1:size(glcmArray, 3)
+        glcm = squeeze(glcmArray(:, :, i));
+        [n, ~] = size(glcm);
+        glcm = glcm' + glcm;
+        glcm(1:n+1:end) = diag(squeeze(glcmArray(:, :, i))) * 2;
+        glcmArray(:, :, i) = glcm;
     end
 end
 
