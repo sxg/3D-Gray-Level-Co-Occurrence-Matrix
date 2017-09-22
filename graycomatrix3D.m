@@ -1,4 +1,4 @@
-function [ glcms, SV ] = graycomatrix3D( V, varargin )
+function [ glcmArray, SV ] = graycomatrix3D( V, varargin )
 %graycomatrix3D Create gray-level co-occurrence matrix for 3D images.
 %   Detailed explanation goes here
 
