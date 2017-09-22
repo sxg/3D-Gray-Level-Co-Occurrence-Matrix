@@ -28,7 +28,7 @@ SV = reshape(SV2D, size(V, 1), size(V, 2), size(V, 3));
 %% Create the GLCM
 % GLCM matrices are all NumLevels-by-NumLevels. There is one GLCM for every
 % offset.
-glcmArray = zeros(numLevels, numLevels, length(offsetArray));
+glcmArray = zeros(numLevels, numLevels, size(offsetArray, 1));
 
 dispstat('', 'init');
 % Count co-occurrences
