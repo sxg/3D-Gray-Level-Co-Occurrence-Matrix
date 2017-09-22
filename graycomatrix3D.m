@@ -2,7 +2,7 @@ function [ glcmArray, SV ] = graycomatrix3D( V, varargin )
 %graycomatrix3D Create gray-level co-occurrence matrix for 3D images.
 %   Detailed explanation goes here
 
-% Add inputs
+%% Add inputs
 p = inputParser;
 % A volume matrix is required
 addRequired(p, 'V');
@@ -13,22 +13,24 @@ addParameter(p, 'offset', [0, 1, 0]);
 % Symmetric considers the ordering of values
 addParameter(p, 'Symmetric', false);
 
-% Get inputs
+%% Get inputs
 parse(p, V, varargin{:});
 numLevels = p.Results.NumLevels;
 offsetArray = p.Results.offset;
 % symmetric = p.Results.symmetric;
 
-% Get the scaled volume from the graycomatrix function by converting the 3D
+%% Get the scaled volume from the graycomatrix function by converting the 3D
 % matrix to 2D temporarily.
 V2D = reshape(V, size(V, 1), size(V, 2) * size(V, 3));
 [~, SV2D] = graycomatrix(V2D, 'NumLevels', numLevels);
 SV = reshape(SV2D, size(V, 1), size(V, 2), size(V, 3));
 
+%% Create the GLCM
 % GLCM matrices are all NumLevels-by-NumLevels. There is one GLCM for every
 % offset.
 glcmArray = zeros(numLevels, numLevels, length(offsetArray));
 
+dispstat('', 'init');
 % Count co-occurrences
 iMin = 1;
 iMax = size(SV, 1);
@@ -46,12 +48,13 @@ for o = 1:size(offsetArray, 1)
             for i = iMin:iMax
                 for j = jMin:jMax
                     for k = kMin:kMax
+                        dispstat(sprintf('%d %d %d %d %d %d', o, grayX, grayY, i, j, k));
                         val = SV(i, j, k);
                         if val == grayX
                             if isInBounds(i + rowOffset, iMin, iMax) && isInBounds(j + colOffset, jMin, jMax) && isInBounds(k + sliceOffset, kMin, kMax)
                                 offsetVal = SV(i + rowOffset, j + colOffset, k + sliceOffset);
                                 if offsetVal == grayY
-                                    % add this to the co-occurrence matrix
+                                    % Add this to the GLCM
                                     glcmArray(grayX, grayY, o) = glcmArray(grayX, grayY, o) + 1;
                                 end
                             end
