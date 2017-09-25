@@ -187,15 +187,17 @@ if NL ~= 0
 
   % Create vectors of row and column subscripts for every pixel and its
   % neighbor.
-  s = size(I);
-  [r,c] = meshgrid(1:s(1),1:s(2));
+  % s = size(I);
+  s = [size(I, 1), size(I, 2), size(I, 3)];
+  [r,c,d] = meshgrid(1:s(1),1:s(2),1:s(3));
   r = r(:);
   c = c(:);
+  d = d(:);
 
   % Compute GLCMS
   GLCMS = zeros(NL,NL,numOffsets);
   for k = 1 : numOffsets
-    GLCMS(:,:,k) = computeGLCM(r,c,Offset(k,:),SI,NL);
+    GLCMS(:,:,k) = computeGLCM(r,c,d,Offset(k,:),SI,NL);
     
     if makeSymmetric 
         % Reflect glcm across the diagonal
@@ -209,15 +211,16 @@ else
 end
 
 %-----------------------------------------------------------------------------
-function oneGLCM = computeGLCM(r,c,offset,si,nl)
+function oneGLCM = computeGLCM(r,c,d,offset,si,nl)
 % computes GLCM given one Offset
 
 r2 = r + offset(1);
 c2 = c + offset(2);
+d2 = d + offset(3);
 
-[nRow nCol] = size(si);
+[nRow, nCol, nDep] = size(si);
 % Determine locations where subscripts outside the image boundary
-outsideBounds = find(c2 < 1 | c2 > nCol | r2 < 1 | r2 > nRow);
+outsideBounds = find(c2 < 1 | c2 > nCol | r2 < 1 | r2 > nRow | d2 < 1 | d2 > nDep);
 
 % Create vector containing si(r1,c1)
 v1 = shiftdim(si,1);
@@ -227,8 +230,10 @@ v1(outsideBounds) = [];
 % Create vector containing si(r2,c2). Not using sub2ind for performance
 % reasons
 r2(outsideBounds) = []; 
-c2(outsideBounds) = []; 
-Index = r2 + (c2 - 1)*nRow;
+c2(outsideBounds) = [];
+d2(outsideBounds) = [];
+% Index = r2 + (c2 - 1)*nRow;
+Index = sub2ind(size(si), r2, c2, d2);
 v2 = si(Index);
 
 % Ensure that v2 is a column vector.
@@ -257,11 +262,11 @@ narginchk(1,9);
 
 % Check I
 I = varargin{1};
-validateattributes(I,{'logical','numeric'},{'2d','real','nonsparse'}, ...
+validateattributes(I,{'logical','numeric'},{'3d','real','nonsparse'}, ...
               mfilename,'I',1);
 
 % Assign Defaults
-offset = [0 1];
+offset = [0 1 0];
 if islogical(I)
   nl = 2;
 else
@@ -292,7 +297,7 @@ if nargin ~= 1
       validateattributes(offset,{'logical','numeric'},...
                     {'2d','nonempty','integer','real'},...
                     mfilename, 'OFFSET', idx);
-      if size(offset,2) ~= 2
+      if size(offset,2) ~= 3
         error(message('images:graycomatrix:invalidOffsetSize'));
       end
       offset = double(offset);
